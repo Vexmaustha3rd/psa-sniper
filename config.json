@@ -1,0 +1,60 @@
+{
+  "discount_threshold": 0.30,
+  "steal_max_all_in": 100,
+  "grail_max_all_in": 500,
+  "auction_window_hours": 6,
+  "final_call_minutes": 30,
+  "min_seller_feedback_score": 10,
+  "min_seller_feedback_pct": 97.0,
+  "max_comp_lookups_per_run": 20,
+  "min_active_comps": 4,
+
+  "categories": {
+    "ccg": "183454",
+    "sports": "261328"
+  },
+
+  "searches": [
+    {"q": "PSA 10 pokemon", "category": "ccg"},
+    {"q": "PSA 1 pokemon", "category": "ccg"},
+    {"q": "PSA 10 1st edition", "category": "ccg"},
+    {"q": "PSA 10 magic the gathering", "category": "ccg"},
+    {"q": "PSA 10 yugioh", "category": "ccg"},
+    {"q": "PSA 10 one piece", "category": "ccg"},
+    {"q": "PSA 10 lorcana", "category": "ccg"},
+    {"q": "PSA 10 rookie", "category": "sports"},
+    {"q": "PSA 1 rookie", "category": "sports"},
+    {"q": "PSA 1 vintage", "category": "sports"}
+  ],
+
+  "grail_rules": {
+    "strong_keywords": [
+      "1st edition", "first edition", "shadowless", "gold star", "crystal",
+      "skyridge", "aquapolis", "e-reader", "illustrator", "trophy",
+      "superfractor", "logoman", "legend of blue eyes", "lob-",
+      "alpha", "beta", "arabian nights", "t206", "goudey", "rated rookie"
+    ],
+    "chase_pokemon": [
+      "charizard", "pikachu", "umbreon", "rayquaza", "lugia", "mewtwo", "mew",
+      "gengar", "blastoise", "venusaur", "espeon", "sylveon", "giratina"
+    ],
+    "chase_variants": [
+      "alt art", "alternate art", "special illustration", "sir", "secret rare",
+      "manga", "promo", "japanese", "holo", "full art", "gold"
+    ],
+    "max_serial": 99,
+    "vintage_year_max": 1980,
+    "wotc_years": [1999, 2003]
+  },
+
+  "watchlist": [
+    {
+      "name": "EXAMPLE - replace with a card you want to hunt",
+      "q": "2023 Pokemon 151 Charizard ex 199 PSA 10",
+      "grade": "10",
+      "comp_value": 0,
+      "max_all_in": 500,
+      "grail": true
+    }
+  ]
+}
