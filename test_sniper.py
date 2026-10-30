@@ -200,6 +200,32 @@ class Main(unittest.TestCase):
                 mock.patch.object(sniper, "scan", side_effect=AssertionError("should not scan")):
             self.assertEqual(sniper.main(), 2)
 
+    def run_backup(self, last_scan_age):
+        import os
+        import tempfile
+        import time
+        from unittest import mock
+        env = {"EBAY_CLIENT_ID": "id", "EBAY_CLIENT_SECRET": "secret", "DRY_RUN": "1",
+               "BACKUP_RUN": "1"}
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "state.json"
+            path.write_text(json.dumps({"last_scan": time.time() - last_scan_age}))
+            with mock.patch.dict(os.environ, env, clear=True), \
+                    mock.patch.object(sniper, "STATE_PATH", path), \
+                    mock.patch.object(sniper, "scan", return_value=[]) as scan:
+                self.assertEqual(sniper.main(), 0)
+            return scan.called, json.loads(path.read_text())["last_scan"]
+
+    def test_backup_run_skips_after_recent_scan(self):
+        scanned, _ = self.run_backup(5 * 60)
+        self.assertFalse(scanned)
+
+    def test_backup_run_scans_when_timer_is_quiet(self):
+        import time
+        scanned, last = self.run_backup(45 * 60)
+        self.assertTrue(scanned)
+        self.assertAlmostEqual(last, time.time(), delta=5)
+
     def test_discord_test_without_webhook_is_an_error(self):
         import os
         from unittest import mock

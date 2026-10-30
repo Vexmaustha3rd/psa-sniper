@@ -7,6 +7,7 @@
   "min_seller_feedback_score": 10,
   "min_seller_feedback_pct": 97.0,
   "max_comp_lookups_per_run": 20,
+  "backup_skip_minutes": 20,
   "min_active_comps": 4,
 
   "categories": {

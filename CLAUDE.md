@@ -3,7 +3,7 @@
 Project context for Claude Code. Read `HANDOFF.md` for current status and next steps.
 
 ## What this is
-A read-only deal scanner. It searches eBay for **PSA 10 and PSA 1** graded trading cards priced **≥30% below comps** and posts alerts to a **Discord webhook**. It runs on **GitHub Actions every 15 minutes** (the owner wants it working while their PC is off).
+A read-only deal scanner. It searches eBay for **PSA 10 and PSA 1** graded trading cards priced **≥30% below comps** and posts alerts to a **Discord webhook**. It runs on **GitHub Actions every 15 minutes**, started by an outside cron-job.org timer (the owner wants it working while their PC is off).
 
 ## Owner requirements (do not change without asking)
 - **Grades:** PSA 10 and PSA 1 only. Exclude other graders (BGS, CGC, SGC, TAG), raw cards, lots, "PSA ready", and reprints.
@@ -24,7 +24,7 @@ A read-only deal scanner. It searches eBay for **PSA 10 and PSA 1** graded tradi
 sniper.py                     # everything: eBay client, filters, grail rules, comps, scan, Discord
 config.json                   # all tunables, searches, grail rules, watchlist
 test_sniper.py                # offline unit tests (fake eBay, no network)
-.github/workflows/sniper.yml  # 15-min cron + workflow_dispatch; state persisted via actions/cache
+.github/workflows/sniper.yml  # workflow_dispatch from cron-job.org + backup cron; state persisted via actions/cache
 sniper.yml                    # duplicate of the workflow at root, only so the owner can paste it in via the GitHub web UI
 README.md                     # owner-facing setup guide (non-technical; keep it that way)
 state/state.json              # runtime only, gitignored: alerted item keys + 12h comp cache
@@ -49,6 +49,6 @@ Env vars: `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET`, `DISCORD_WEBHOOK_URL`, optiona
 ## Constraints to respect
 - **eBay Browse API quota: 5,000 calls/day.** Each run costs about 2 calls per search + 2 per watchlist entry + 1 per comp lookup. At 96 runs/day, keep a run under about 50 calls. Do the math before adding searches.
 - **eBay sold data is not available.** Marketplace Insights is a restricted API, and the Finding API's `findCompletedItems` was decommissioned. Don't build on either without confirming access.
-- **GitHub Actions:** public repos get unlimited minutes. Private repos get 2,000 min/month free, so use a ≥30-min cron there. Cron can start late. Scheduled workflows on public repos are paused after 60 days with no repo activity.
+- **GitHub Actions:** public repos get unlimited minutes. Private repos get 2,000 min/month free, so use a ≥30-min cron there. GitHub cron ran only 4 times in its first ~18h on this repo, so it's a backup only: `schedule` runs set `BACKUP_RUN=1` and skip if a scan ran within `backup_skip_minutes`. Scheduled workflows on public repos are paused after 60 days with no repo activity.
 - Python 3.12 in CI. `requests` is the only dependency, so keep it lean.
 - Add a test with every behavior change to filters, grail rules, comps, or the alert format.

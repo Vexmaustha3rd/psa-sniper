@@ -2,8 +2,9 @@ name: PSA Sniper
 
 on:
   schedule:
-    # Every 15 minutes (GitHub may start scheduled runs a few minutes late).
-    - cron: "*/15 * * * *"
+    # Backup only. cron-job.org starts the real 15-minute scans (see README), because
+    # GitHub can delay these by hours. Skipped when a scan ran recently. Off the hour on purpose.
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch:      # lets you press "Run workflow" manually
     inputs:
       test_discord:
@@ -44,6 +45,7 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           PRICECHARTING_TOKEN: ${{ secrets.PRICECHARTING_TOKEN }}
           DISCORD_TEST: ${{ inputs.test_discord && '1' || '' }}
+          BACKUP_RUN: ${{ github.event_name == 'schedule' && '1' || '' }}
         run: python sniper.py
 
       - name: Save alert history

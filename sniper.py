@@ -682,6 +682,11 @@ def main() -> int:
         return 0
 
     state = load_json(STATE_PATH, {})
+    if os.environ.get("BACKUP_RUN") == "1":
+        # GitHub's own schedule is only a fallback; two triggers would double the eBay calls.
+        if time.time() - state.get("last_scan", 0) < cfg.get("backup_skip_minutes", 20) * 60:
+            print("backup run skipped: a scan ran recently")
+            return 0
     prune(state)
     ebay = Ebay(cid, sec)
     comps = Comps(ebay, cfg, state.setdefault("comps", {}), os.environ.get("PRICECHARTING_TOKEN"))
@@ -695,6 +700,7 @@ def main() -> int:
             state["alerted"][f'{d["listing"].item_id}|found'] = time.time()
     print(f"scan done: {len(deals)} deal(s), {ebay.calls} eBay calls, {comps.lookups} comp lookups")
 
+    state["last_scan"] = time.time()
     STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
     STATE_PATH.write_text(json.dumps(state))
     return 0

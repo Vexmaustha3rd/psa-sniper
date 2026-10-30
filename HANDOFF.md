@@ -38,7 +38,7 @@ Then do a real Discord post and a `workflow_dispatch` run on GitHub.
 2. **Grail rules are keyword heuristics** (`grail_check`). Expect misses (e.g. rookies without "RC" in the title) and false hits (e.g. "holo" + "pikachu" on any modern card). There's no PSA population data yet.
 3. **Title matching for comps** uses Jaccard similarity on tokens (≥0.45) plus a card-number match. It can mix parallels (e.g. base vs. silver Prizm). Consider requiring parallel keywords to match.
 4. **Shipping unknown → assumed $5** and flagged.
-5. **GitHub cron latency** can be several minutes. If the owner wants tighter sniping, move to an always-on host (small VPS / Fly.io / Railway) with a 2–5 min loop. Mind the API quota.
+5. **GitHub cron is unreliable** (4 runs in the first ~18h, gaps of 4-7h). An outside cron-job.org timer now dispatches the workflow every 15 min (README step 6) and GitHub cron is a backup. If the owner wants tighter sniping, move to an always-on host (small VPS / Fly.io / Railway) with a 2–5 min loop. Mind the API quota.
 
 ## Roadmap (owner asked for these, not built)
 - **More marketplaces:** Fanatics Collect, Goldin, Heritage. None has a known public listings API, so research official feeds or partner programs first. Include buyer's premium in all-in. The earlier estimates were Goldin ~23%, Heritage ~25%, Fanatics ~15%. Verify current terms.

@@ -34,7 +34,7 @@ Auctions are alerted when they're within 6 hours of ending, then **again** in th
 
 ### 3. GitHub (free account)
 1. Sign up at **github.com**, then **New repository** → name it `psa-sniper` → **Public** → Create.
-   *Public is recommended: GitHub Actions minutes are unlimited for public repos. Your keys stay private in Secrets (step 4). If you prefer Private, change the schedule to every 30 minutes (see Tuning) to stay inside the free 2,000 minutes/month.*
+   *Public is recommended: GitHub Actions minutes are unlimited for public repos. Your keys stay private in Secrets (step 4). If you prefer Private, set the timer in step 6 to every 30 minutes to stay inside the free 2,000 minutes/month.*
 2. Click **uploading an existing file** and drag in `sniper.py`, `config.json`, `requirements.txt`, `test_sniper.py`, `README.md`, `.gitignore`. Commit.
 3. The workflow lives in a hidden folder, so create it by hand: **Add file → Create new file**, name it exactly
    `.github/workflows/sniper.yml`
@@ -51,7 +51,34 @@ Repo **Settings → Secrets and variables → Actions → New repository secret*
 | `PRICECHARTING_TOKEN` | *(optional, paid)* PriceCharting API token, see Comps below |
 
 ### 5. Turn it on
-**Actions** tab → enable workflows if asked → **PSA Sniper → Run workflow**. Open the run; the last log line should say `scan done: N deal(s), ... eBay calls`. After that it runs on its own every 15 minutes.
+**Actions** tab → enable workflows if asked → **PSA Sniper → Run workflow**. Open the run; the last log line should say `scan done: N deal(s), ... eBay calls`. After that, step 6 keeps it running every 15 minutes.
+
+### 6. Set the 15-minute timer (cron-job.org)
+GitHub's built-in schedule can run hours late, so a free outside timer starts each scan instead. GitHub's schedule stays on as a backup.
+
+**Make a GitHub token.** It only needs permission to start this one workflow.
+1. GitHub → your picture → **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**.
+2. Name it `psa-sniper-timer`. Set the longest expiration offered and put a reminder in your calendar.
+3. **Repository access → Only select repositories →** `psa-sniper`.
+4. **Permissions → Repository permissions → Actions → Read and write**. Leave everything else alone.
+5. Generate it and copy the token. GitHub only shows it once.
+
+**Make the timer.**
+1. Sign up at **cron-job.org** and choose **Create cronjob**.
+2. Title: `PSA Sniper`. URL:
+   `https://api.github.com/repos/Vexmaustha3rd/psa-sniper/actions/workflows/sniper.yml/dispatches`
+3. Schedule: every 15 minutes.
+4. Under **Advanced**, set **Request method** to `POST`, and add these headers (replace `YOUR-TOKEN`, keep the word `Bearer`):
+
+| Key | Value |
+|---|---|
+| `Authorization` | `Bearer YOUR-TOKEN` |
+| `Accept` | `application/vnd.github+json` |
+| `Content-Type` | `application/json` |
+
+5. Set **Request body** to `{"ref":"main"}` and save.
+
+**Check it.** On GitHub's **Actions** tab, a new run labelled `workflow_dispatch` should appear about every 15 minutes. Runs labelled `schedule` are the backup, and they stop early when the timer is working.
 
 ---
 
@@ -90,13 +117,14 @@ Edit `config.json` on GitHub (pencil icon) and replace the EXAMPLE entry:
 - `min_seller_feedback_score` / `min_seller_feedback_pct`: sellers below these are skipped
 - `searches`: the eBay searches it runs. Add your own.
 - `grail_rules`: the keywords and rules that earn the GRAIL / PG tag
-- Schedule: edit the `cron` line in `.github/workflows/sniper.yml` (`*/30 * * * *` = every 30 min)
+- Schedule: change the timer on cron-job.org. Don't go faster than every 15 minutes without checking the eBay limit below.
 
 ## Limits to know
 - **eBay only for now.** Goldin, Fanatics Collect and Heritage don't offer public APIs; adding them is a later phase.
 - **eBay API limit** is 5,000 calls/day. The default setup uses about 30–40 per run (about 3,500/day at every 15 min). If you add lots of searches or watchlist cards, slow the schedule down.
-- **GitHub schedules can start a few minutes late** at busy times. Cards ending within the next 6 hours are caught early, and the FINAL CALL covers the last 30 minutes.
-- **GitHub pauses schedules on public repos after 60 days with no commits.** Edit any file (like `config.json`) at least every couple of months, or click "Enable workflow" if it pauses.
+- **GitHub's own schedule can run hours late or skip runs**, which is why the timer in step 6 does the real work. Cards ending within the next 6 hours are caught early, and the FINAL CALL covers the last 30 minutes.
+- **If the timer's token expires**, scans drop back to GitHub's slower backup schedule. Make a new token and paste it into cron-job.org.
+- **GitHub pauses its backup schedule on public repos after 60 days with no commits.** The timer isn't affected. Click "Enable workflow" if you want the backup back.
 - Prices often jump in an auction's last minute. The current bid isn't the final price, so use the deal ceiling.
 - This is a price-comparison tool, not investment advice. Collectible values can go down.
 
