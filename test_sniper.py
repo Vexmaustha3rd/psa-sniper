@@ -185,6 +185,27 @@ class Main(unittest.TestCase):
                 mock.patch.object(sniper, "scan", side_effect=AssertionError("should not scan")):
             self.assertEqual(sniper.main(), 0)
 
+    def test_no_secrets_at_all_skips_quietly(self):
+        import os
+        from unittest import mock
+        with mock.patch.dict(os.environ, {}, clear=True), \
+                mock.patch.object(sniper, "scan", side_effect=AssertionError("should not scan")):
+            self.assertEqual(sniper.main(), 0)
+
+    def test_ebay_keys_without_webhook_is_an_error(self):
+        import os
+        from unittest import mock
+        env = {"EBAY_CLIENT_ID": "id", "EBAY_CLIENT_SECRET": "secret"}
+        with mock.patch.dict(os.environ, env, clear=True), \
+                mock.patch.object(sniper, "scan", side_effect=AssertionError("should not scan")):
+            self.assertEqual(sniper.main(), 2)
+
+    def test_discord_test_without_webhook_is_an_error(self):
+        import os
+        from unittest import mock
+        with mock.patch.dict(os.environ, {"DISCORD_TEST": "1"}, clear=True):
+            self.assertEqual(sniper.main(), 2)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -667,17 +667,18 @@ def main() -> int:
     cid, sec = os.environ.get("EBAY_CLIENT_ID"), os.environ.get("EBAY_CLIENT_SECRET")
     hook = os.environ.get("DISCORD_WEBHOOK_URL", "")
     dry = os.environ.get("DRY_RUN") == "1"
+    test = os.environ.get("DISCORD_TEST") == "1"
+    if not test and (not cid or not sec):
+        # Not an error yet: lets the schedule run quietly until the eBay keys are added.
+        print("::warning::EBAY_CLIENT_ID / EBAY_CLIENT_SECRET not set yet; skipping scan")
+        return 0
     if not hook and not dry:
         print("Missing DISCORD_WEBHOOK_URL", file=sys.stderr)
         return 2
-    if os.environ.get("DISCORD_TEST") == "1":
+    if test:
         now = datetime.now(UTC)
         post_discord(hook, [sample_deal(now)], now, dry)
         print("test alert sent to Discord")
-        return 0
-    if not cid or not sec:
-        # Not an error yet: lets the schedule run quietly until the eBay keys are added.
-        print("::warning::EBAY_CLIENT_ID / EBAY_CLIENT_SECRET not set yet; skipping scan")
         return 0
 
     state = load_json(STATE_PATH, {})
